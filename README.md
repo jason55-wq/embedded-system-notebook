@@ -1,85 +1,139 @@
-# Arduino 筆記與 Code 機器人
+# Arduino Sample Code Notebook
 
-這是一個可直接在本機執行的 Arduino 學習工具，結合了筆記整理、常見程式範例產生，以及基本除錯建議，適合用來記錄模組測試、整理接線重點，或快速建立 Arduino 專案範例。
+這個專案是一個給 Arduino 初學者與專題練習使用的小型範例平台，整合了「筆記管理」、「Arduino 程式碼產生」與「常見除錯提示」三個功能。你可以直接在瀏覽器中整理開發筆記、切換不同 sample code 類型，並快速取得可貼進 Arduino IDE 的 `.ino` 範例內容。
 
-## 功能特色
+## 專案特色
 
-- 整理 Arduino 筆記並儲存在瀏覽器本機
-- 依常見專案類型快速產生範例程式，包含 Arduino LED 跑馬燈
-- 提供簡單的除錯排查建議
-- 純 `HTML`、`CSS`、`JavaScript` 與 `Python`，不需要先安裝額外套件
+- 用網頁介面整理 Arduino 學習筆記
+- 內建多種常見 Arduino sample code 模板
+- 可依專案類型、板子型號、腳位設定產生程式
+- 提供常見錯誤關鍵字的快速除錯建議
+- 使用純前端加上簡單 Python 靜態伺服器，容易執行與修改
 
-## 專案檔案
+## 目前包含的 Sample Code
 
-- [index.html](</c:/Users/ASUS/Desktop/python codex/embedded system notebook/index.html>)：主頁面
-- [styles.css](</c:/Users/ASUS/Desktop/python codex/embedded system notebook/styles.css>)：介面樣式
-- [app.js](</c:/Users/ASUS/Desktop/python codex/embedded system notebook/app.js>)：前端互動與程式碼產生邏輯
-- [server.py](</c:/Users/ASUS/Desktop/python codex/embedded system notebook/server.py>)：本機靜態伺服器
+這個專案目前內建 6 種 Arduino sample code：
 
-## 使用方式
+### 1. LED Blink
 
-### 方式一：直接開啟頁面
+最基本的 LED 閃爍範例，會讓 LED 以固定頻率亮滅。適合用來確認板子、上傳流程與輸出腳位是否正常。
 
-直接用瀏覽器打開 `index.html`。
+- 預設腳位：`13`
+- 適合練習：`pinMode()`、`digitalWrite()`、`delay()`
 
-### 方式二：使用本機伺服器
+### 2. LED Chaser
 
-在專案資料夾中執行：
+多顆 LED 依序流動點亮的跑馬燈範例，支援從輸入欄位解析多個 LED 腳位設定。
+
+- 預設腳位：`8, 9, 10, 11`
+- 可輸入格式：`LEDS=8,9,10,11`
+- 適合練習：陣列、迴圈、控制多個輸出腳位
+
+### 3. Button Controls LED
+
+按下按鈕時點亮 LED，並透過序列埠輸出訊息。這是很常見的數位輸入入門範例。
+
+- 預設 LED 腳位：`13`
+- 預設按鈕腳位：`2`
+- 使用：`INPUT_PULLUP`
+- 適合練習：按鈕讀值、上拉輸入、基本互動控制
+
+### 4. Servo Sweep
+
+控制伺服馬達在 `0` 到 `180` 度之間來回擺動，展示伺服元件的基本操作方式。
+
+- 預設伺服腳位：`9`
+- 使用函式庫：`Servo.h`
+- 適合練習：伺服控制、角度設定、函式庫整合
+
+### 5. Ultrasonic Distance
+
+使用超音波感測器量測距離，並透過序列埠輸出公分數值。
+
+- 預設 `TRIG` 腳位：`9`
+- 預設 `ECHO` 腳位：`10`
+- 適合練習：感測器觸發、脈衝時間量測、距離換算
+
+### 6. DHT Temperature and Humidity
+
+讀取 DHT11 感測器的溫度與濕度資料，並將結果輸出到序列埠。
+
+- 預設感測器腳位：`2`
+- 使用函式庫：`DHT.h`
+- 預設型號：`DHT11`
+- 適合練習：環境感測、函式庫初始化、資料讀取失敗判斷
+
+## 網頁功能介紹
+
+### Arduino Notebook
+
+筆記區可以讓你記錄：
+
+- 專題名稱
+- 標籤
+- 接線方式
+- 感測器用途
+- 測試結果
+- 問題排查紀錄
+
+筆記資料會儲存在瀏覽器的 `localStorage`，重新整理頁面後仍會保留。
+
+### Code Builder
+
+Code Builder 是這個專案的核心功能，可以根據使用者輸入快速產生 Arduino 範例程式。
+
+可設定內容包括：
+
+- 專案類型
+- 板子型號：`Arduino Uno`、`Arduino Nano`、`Arduino Mega`
+- 腳位設定
+- 額外需求描述
+
+產生結果會直接顯示在文字區塊中，方便複製到 Arduino IDE 測試。
+
+### Debug Assistant
+
+除錯區目前支援針對幾類常見關鍵字給出快速說明，例如：
+
+- `avrdude`
+- 按鈕沒反應
+- LED 不亮
+
+這一區適合做成未來更完整 AI 助手或錯誤知識庫的基礎版本。
+
+## 檔案說明
+
+- [index.html](</c:/Users/ASUS/Desktop/python codex/embedded system notebook/index.html>)：主畫面結構，包含筆記區、Code Builder 與除錯區
+- [styles.css](</c:/Users/ASUS/Desktop/python codex/embedded system notebook/styles.css>)：整體版面與元件樣式
+- [app.js](</c:/Users/ASUS/Desktop/python codex/embedded system notebook/app.js>)：筆記儲存、sample code 產生與除錯提示邏輯
+- [server.py](</c:/Users/ASUS/Desktop/python codex/embedded system notebook/server.py>)：本機靜態伺服器，啟動後會自動開啟網頁
+
+## 如何執行
+
+在專案目錄執行：
 
 ```bash
 python server.py
 ```
 
-接著在瀏覽器打開終端機顯示的網址，預設是：
+啟動後可在瀏覽器開啟：
 
 ```text
 http://127.0.0.1:8000/index.html
 ```
 
-## 操作說明
-
-### 1. 筆記區
-
-- 輸入主題、標籤與內容
-- 點選「儲存筆記」後，資料會保存在瀏覽器 `localStorage`
-- 可在下方查看已儲存的筆記
-
-### 2. Code Builder
-
-- 選擇專案類型，例如 `LED 閃爍`、`LED 跑馬燈`、`按鈕控制 LED`、`超音波測距`
-- 選擇開發板
-- 視需要填入腳位設定與額外需求
-- 點選「產生程式碼」後，即可取得範例 Arduino 程式
-
-### LED 跑馬燈說明
-
-- 在 `Code Builder` 選擇 `LED 跑馬燈` 後，會產生可直接貼到 Arduino IDE 的跑馬燈範例
-- 若未填寫腳位設定，預設會使用 `8, 9, 10, 11` 四個 LED 腳位
-- 若想自訂腳位，可在腳位設定輸入 `LEDS=8,9,10,11` 這種格式
-- 產生的程式會依序點亮 LED，並在尾端反向跑回，形成基本跑馬燈效果
-
-### 3. 除錯助理
-
-- 輸入像是 `avrdude 錯誤`、`按鈕亂跳`、`LED 沒亮` 這類問題
-- 系統會提供基礎排查建議
-
 ## 適合的使用情境
 
-- 記錄感測器接線方式與測試結果
-- 整理每個 Arduino 模組的注意事項
-- 快速產生作業、練習或展示用程式
-- 快速建立 LED 跑馬燈示範程式
-- 在開發初期做簡單故障排查
+- Arduino 課堂作業整理
+- 感測器與控制元件基礎練習
+- 專題前期的 sample code 快速建立
+- 教學展示用的小型互動平台
+- 做為未來串接 AI 產碼或專案管理功能的雛形
 
 ## 後續可擴充方向
 
-- 接上 OpenAI API，升級成真正的 AI Arduino 助手
-- 匯出筆記為 `Markdown`、`JSON` 或 `.txt`
-- 產生 `.ino` 檔案
-- 增加更多模組與範例，例如 `OLED`、`RFID`、`藍牙`、`I2C`
-- 加入搜尋、分類與收藏功能
-
-## 備註
-
-- 目前筆記資料儲存在本機瀏覽器中，不會自動同步到其他裝置
-- 若清除瀏覽器網站資料，筆記也可能一併消失
+- 加入更多 sample code 類型，例如 `OLED`、`RFID`、`Buzzer`、`I2C`
+- 支援匯出 `.ino` 或 `.txt`
+- 串接 OpenAI API 產生更客製化的 Arduino 程式
+- 增加接線圖、元件清單與教學說明區
+- 將除錯助手改成可對話式問答介面
