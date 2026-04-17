@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arduino 筆記與 Code 機器人</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">Embedded Notebook</p>
+        <h1>Arduino 筆記與 Code 機器人</h1>
+        <p class="hero-text">
+          把電路筆記、模組知識、常用程式碼和除錯建議整理在同一個地方。
+          先用本機版開始，之後我們也可以再接上 AI API。
+        </p>
+      </div>
+      <div class="hero-card">
+        <p class="hero-card-title">今天可以做什麼</p>
+        <ul>
+          <li>記錄感測器接線與測試結果</li>
+          <li>快速產生 Arduino 範例程式</li>
+          <li>依常見錯誤取得排查建議</li>
+        </ul>
+      </div>
+    </header>
+
+    <main class="main-grid">
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <p class="panel-kicker">筆記區</p>
+            <h2>Arduino Notebook</h2>
+          </div>
+          <button id="saveNotesBtn" class="ghost-button">儲存筆記</button>
+        </div>
+
+        <label class="field-label" for="noteTitle">主題</label>
+        <input id="noteTitle" class="text-input" type="text" placeholder="例如：超音波感測器 HC-SR04">
+
+        <label class="field-label" for="noteTags">標籤</label>
+        <input id="noteTags" class="text-input" type="text" placeholder="例如：sensor, distance, beginner">
+
+        <label class="field-label" for="noteBody">內容</label>
+        <textarea id="noteBody" class="text-area" placeholder="記錄接線方式、測試結果、注意事項..."></textarea>
+
+        <p id="saveStatus" class="status-text"></p>
+
+        <div class="saved-notes-block">
+          <div class="subsection-header">
+            <h3>已儲存筆記</h3>
+            <button id="clearNotesBtn" class="danger-button">清空所有筆記</button>
+          </div>
+          <div id="notesList" class="notes-list"></div>
+        </div>
+      </section>
+
+      <section class="panel accent-panel">
+        <div class="panel-header">
+          <div>
+            <p class="panel-kicker">程式助手</p>
+            <h2>Code Builder</h2>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div>
+            <label class="field-label" for="projectType">專案類型</label>
+            <select id="projectType" class="text-input">
+              <option value="blink">LED 閃爍</option>
+              <option value="button_led">按鈕控制 LED</option>
+              <option value="servo">伺服馬達</option>
+              <option value="ultrasonic">超音波測距</option>
+              <option value="dht">溫濕度感測</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="field-label" for="boardType">開發板</label>
+            <select id="boardType" class="text-input">
+              <option value="uno">Arduino Uno</option>
+              <option value="nano">Arduino Nano</option>
+              <option value="mega">Arduino Mega</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="field-label" for="pinConfig">腳位設定</label>
+            <input id="pinConfig" class="text-input" type="text" placeholder="例如：LED=13, BUTTON=2">
+          </div>
+
+          <div>
+            <label class="field-label" for="extraGoal">額外需求</label>
+            <input id="extraGoal" class="text-input" type="text" placeholder="例如：每 1 秒輸出序列埠資料">
+          </div>
+        </div>
+
+        <button id="generateCodeBtn" class="primary-button">產生程式碼</button>
+
+        <label class="field-label output-label" for="generatedCode">輸出結果</label>
+        <textarea id="generatedCode" class="code-output" spellcheck="false"></textarea>
+      </section>
+
+      <section class="panel full-width">
+        <div class="panel-header">
+          <div>
+            <p class="panel-kicker">知識卡</p>
+            <h2>模組與除錯助理</h2>
+          </div>
+        </div>
+
+        <div class="knowledge-grid">
+          <article class="knowledge-card">
+            <h3>常見上傳失敗</h3>
+            <p>檢查 COM Port、板子型號、USB 線是否支援資料傳輸，並關閉占用序列埠的視窗。</p>
+          </article>
+
+          <article class="knowledge-card">
+            <h3>按鈕亂跳</h3>
+            <p>先確認有沒有使用上拉或下拉電阻。程式上可以加上 debounce 時間避免重複觸發。</p>
+          </article>
+
+          <article class="knowledge-card">
+            <h3>感測值不穩</h3>
+            <p>優先確認供電、接地共地、取樣間隔，以及是否需要平均濾波。</p>
+          </article>
+        </div>
+
+        <div class="assistant-box">
+          <label class="field-label" for="debugPrompt">輸入你遇到的問題</label>
+          <input id="debugPrompt" class="text-input" type="text" placeholder="例如：上傳時一直顯示 avrdude 錯誤">
+          <button id="debugBtn" class="ghost-button">取得建議</button>
+          <div id="debugAnswer" class="debug-answer"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
