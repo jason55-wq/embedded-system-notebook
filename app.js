@@ -30,7 +30,7 @@ function saveNote() {
   const body = noteBody.value.trim();
 
   if (!title || !body) {
-    saveStatus.textContent = "請至少填入主題和內容。";
+    saveStatus.textContent = "請至少填寫標題與內容。";
     return;
   }
 
@@ -49,20 +49,20 @@ function saveNote() {
   noteTitle.value = "";
   noteTags.value = "";
   noteBody.value = "";
-  saveStatus.textContent = "筆記已儲存到本機瀏覽器。";
+  saveStatus.textContent = "筆記已成功儲存。";
 }
 
 function clearNotes() {
   localStorage.removeItem(notesKey);
   renderNotes();
-  saveStatus.textContent = "所有筆記已清空。";
+  saveStatus.textContent = "所有筆記都已清除。";
 }
 
 function renderNotes() {
   const notes = loadNotes();
 
   if (!notes.length) {
-    notesList.innerHTML = "<p class='note-meta'>目前還沒有筆記，先記下你的第一個模組測試吧。</p>";
+    notesList.innerHTML = "<p class='note-meta'>目前還沒有筆記，先新增一筆試試看。</p>";
     return;
   }
 
@@ -270,26 +270,26 @@ function answerDebugPrompt() {
   const answer = document.getElementById("debugAnswer");
 
   if (!input) {
-    answer.textContent = "先輸入你目前遇到的現象，我會提供對應的排查方向。";
+    answer.textContent = "請先輸入你遇到的錯誤訊息或症狀。";
     return;
   }
 
-  if (input.includes("avrdude") || input.includes("上傳")) {
-    answer.textContent = "先檢查板型與 COM Port 是否正確，再確認 USB 線可傳輸資料。若序列監控器開著，也請先關閉後重試。";
+  if (input.includes("avrdude") || input.includes("com port")) {
+    answer.textContent = "先確認選到正確的 COM Port，並檢查 USB 線是否可傳輸資料；若序列埠被其他程式佔用，也會造成上傳失敗。";
     return;
   }
 
-  if (input.includes("亂跳") || input.includes("不穩")) {
-    answer.textContent = "這通常和供電、接地、浮接輸入或取樣雜訊有關。先確認共地、加上上拉/下拉，再用平均值或 debounce 減少抖動。";
+  if (input.includes("按鈕") || input.includes("button")) {
+    answer.textContent = "按鈕不穩定通常與接線或彈跳效應有關，建議使用 INPUT_PULLUP，並在程式中加入簡單 debounce 邏輯。";
     return;
   }
 
-  if (input.includes("沒有反應") || input.includes("沒亮")) {
-    answer.textContent = "優先確認腳位編號、元件方向、共地，以及 setup() 中是否有正確設定 pinMode。再用最小測試程式逐步驗證。";
+  if (input.includes("led") || input.includes("燈不亮")) {
+    answer.textContent = "請先確認 LED 正負極方向、限流電阻，以及程式中的腳位編號是否和實際接線一致。";
     return;
   }
 
-  answer.textContent = "建議先從三個方向排查：1. 接線與供電 2. 板型與腳位設定 3. 用最小可運作範例逐步測試。之後我們也可以把這裡升級成真正的 AI 問答助手。";
+  answer.textContent = "可以先從三個方向檢查：1. 接線是否正確。2. 板子與連接埠設定是否正確。3. 錯誤訊息是否指出特定模組或函式。";
 }
 
 function labelForBoard(boardType) {

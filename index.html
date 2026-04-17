@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Arduino 筆記與 Code 機器人</title>
+  <title>Arduino 筆記與 Code 產生器</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -11,18 +11,18 @@
     <header class="hero">
       <div class="hero-copy">
         <p class="eyebrow">Embedded Notebook</p>
-        <h1>Arduino 筆記與 Code 機器人</h1>
+        <h1>Arduino 筆記與 Code 產生器</h1>
         <p class="hero-text">
-          把電路筆記、模組知識、常用程式碼和除錯建議整理在同一個地方。
-          先用本機版開始，之後我們也可以再接上 AI API。
+          把常用電路、接線方式與測試結果整理成自己的筆記，同時快速建立 Arduino 範例程式。
+          你可以記錄感測器接法、儲存實驗重點，並即時產生可用的草稿程式碼。
         </p>
       </div>
       <div class="hero-card">
-        <p class="hero-card-title">今天可以做什麼</p>
+        <p class="hero-card-title">這個頁面可以做什麼</p>
         <ul>
-          <li>記錄感測器接線與測試結果</li>
-          <li>快速產生 Arduino 範例程式</li>
-          <li>依常見錯誤取得排查建議</li>
+          <li>整理實驗筆記與元件接線資訊</li>
+          <li>快速產生常見 Arduino 範例程式</li>
+          <li>輸入問題並取得基本除錯建議</li>
         </ul>
       </div>
     </header>
@@ -37,21 +37,21 @@
           <button id="saveNotesBtn" class="ghost-button">儲存筆記</button>
         </div>
 
-        <label class="field-label" for="noteTitle">主題</label>
+        <label class="field-label" for="noteTitle">標題</label>
         <input id="noteTitle" class="text-input" type="text" placeholder="例如：超音波感測器 HC-SR04">
 
         <label class="field-label" for="noteTags">標籤</label>
         <input id="noteTags" class="text-input" type="text" placeholder="例如：sensor, distance, beginner">
 
         <label class="field-label" for="noteBody">內容</label>
-        <textarea id="noteBody" class="text-area" placeholder="記錄接線方式、測試結果、注意事項..."></textarea>
+        <textarea id="noteBody" class="text-area" placeholder="記錄接線方式、觀察到的現象、測試結果與注意事項"></textarea>
 
         <p id="saveStatus" class="status-text"></p>
 
         <div class="saved-notes-block">
           <div class="subsection-header">
-            <h3>已儲存筆記</h3>
-            <button id="clearNotesBtn" class="danger-button">清空所有筆記</button>
+            <h3>已儲存的筆記</h3>
+            <button id="clearNotesBtn" class="danger-button">清除全部筆記</button>
           </div>
           <div id="notesList" class="notes-list"></div>
         </div>
@@ -60,7 +60,7 @@
       <section class="panel accent-panel">
         <div class="panel-header">
           <div>
-            <p class="panel-kicker">程式助手</p>
+            <p class="panel-kicker">程式產生器</p>
             <h2>Code Builder</h2>
           </div>
         </div>
@@ -73,8 +73,8 @@
               <option value="led_chaser">LED 跑馬燈</option>
               <option value="button_led">按鈕控制 LED</option>
               <option value="servo">伺服馬達</option>
-              <option value="ultrasonic">超音波測距</option>
-              <option value="dht">溫濕度感測</option>
+              <option value="ultrasonic">超音波距離感測</option>
+              <option value="dht">溫溼度感測器</option>
             </select>
           </div>
 
@@ -94,7 +94,7 @@
 
           <div>
             <label class="field-label" for="extraGoal">額外需求</label>
-            <input id="extraGoal" class="text-input" type="text" placeholder="例如：每 1 秒輸出序列埠資料">
+            <input id="extraGoal" class="text-input" type="text" placeholder="例如：每 1 秒閃一次，或加入序列埠輸出">
           </div>
         </div>
 
@@ -107,31 +107,31 @@
       <section class="panel full-width">
         <div class="panel-header">
           <div>
-            <p class="panel-kicker">知識卡</p>
-            <h2>模組與除錯助理</h2>
+            <p class="panel-kicker">教學與除錯</p>
+            <h2>常見問題與快速說明</h2>
           </div>
         </div>
 
         <div class="knowledge-grid">
           <article class="knowledge-card">
-            <h3>常見上傳失敗</h3>
-            <p>檢查 COM Port、板子型號、USB 線是否支援資料傳輸，並關閉占用序列埠的視窗。</p>
+            <h3>找不到序列埠怎麼辦</h3>
+            <p>先確認 USB 線可傳輸資料，再檢查裝置管理員與 Arduino IDE 中的 COM Port 是否一致，必要時重新插拔裝置。</p>
           </article>
 
           <article class="knowledge-card">
-            <h3>按鈕亂跳</h3>
-            <p>先確認有沒有使用上拉或下拉電阻。程式上可以加上 debounce 時間避免重複觸發。</p>
+            <h3>按鈕訊號不穩定</h3>
+            <p>如果按下按鈕會出現連續觸發，通常是彈跳效應造成，可以使用 `INPUT_PULLUP` 並搭配簡單 debounce 邏輯改善。</p>
           </article>
 
           <article class="knowledge-card">
-            <h3>感測值不穩</h3>
-            <p>優先確認供電、接地共地、取樣間隔，以及是否需要平均濾波。</p>
+            <h3>程式上傳失敗</h3>
+            <p>請確認板子型號與處理器設定正確，並檢查是否被其他程式佔用序列埠，有時重新選擇連接埠後即可恢復。</p>
           </article>
         </div>
 
         <div class="assistant-box">
-          <label class="field-label" for="debugPrompt">輸入你遇到的問題</label>
-          <input id="debugPrompt" class="text-input" type="text" placeholder="例如：上傳時一直顯示 avrdude 錯誤">
+          <label class="field-label" for="debugPrompt">描述你遇到的問題</label>
+          <input id="debugPrompt" class="text-input" type="text" placeholder="例如：上傳時出現 avrdude 錯誤">
           <button id="debugBtn" class="ghost-button">取得建議</button>
           <div id="debugAnswer" class="debug-answer"></div>
         </div>
