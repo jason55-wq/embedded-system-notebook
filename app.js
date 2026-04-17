@@ -106,6 +106,42 @@ void loop() {
   delay(500);
 }`;
       break;
+    case "led_chaser": {
+      const ledPins = parseLedPins(pinConfig);
+      const pinList = ledPins.join(", ");
+      code = `${boardComment}
+${configComment}
+${extraComment}
+
+const int LED_PINS[] = {${pinList}};
+const int LED_COUNT = sizeof(LED_PINS) / sizeof(LED_PINS[0]);
+const int STEP_DELAY = 120;
+
+void setup() {
+  for (int i = 0; i < LED_COUNT; i++) {
+    pinMode(LED_PINS[i], OUTPUT);
+  }
+}
+
+void lightOneLed(int activeIndex) {
+  for (int i = 0; i < LED_COUNT; i++) {
+    digitalWrite(LED_PINS[i], i == activeIndex ? HIGH : LOW);
+  }
+}
+
+void loop() {
+  for (int i = 0; i < LED_COUNT; i++) {
+    lightOneLed(i);
+    delay(STEP_DELAY);
+  }
+
+  for (int i = LED_COUNT - 2; i > 0; i--) {
+    lightOneLed(i);
+    delay(STEP_DELAY);
+  }
+}`;
+      break;
+    }
     case "button_led":
       code = `${boardComment}
 ${configComment}
@@ -274,4 +310,19 @@ function escapeHtml(value) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+}
+
+function parseLedPins(pinConfig) {
+  const match = pinConfig.match(/LEDS?\s*=\s*([\d,\s]+)/i);
+
+  if (!match) {
+    return [8, 9, 10, 11];
+  }
+
+  const pins = match[1]
+    .split(",")
+    .map((value) => Number.parseInt(value.trim(), 10))
+    .filter((value) => Number.isInteger(value));
+
+  return pins.length >= 2 ? pins : [8, 9, 10, 11];
 }
