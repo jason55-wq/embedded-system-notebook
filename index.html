@@ -135,6 +135,30 @@
           <button id="debugBtn" class="ghost-button">取得建議</button>
           <div id="debugAnswer" class="debug-answer"></div>
         </div>
+
+        <div class="assistant-box chat-assistant">
+          <div class="chat-header">
+            <div>
+              <p class="field-label chat-kicker">Ollama AI</p>
+              <h3>地端聊天助手</h3>
+            </div>
+            <label class="chat-model">
+              <span class="chat-model-label">模型名稱</span>
+              <input id="ollamaModel" class="text-input" type="text" placeholder="留空會自動使用本機模型，例如 gemma:7b">
+            </label>
+          </div>
+
+          <label class="field-label" for="chatPrompt">對 AI 說點什麼</label>
+          <textarea id="chatPrompt" class="text-area chat-input" placeholder="可以問 Arduino、感測器、除錯、接線，或直接請它幫你看程式碼。"></textarea>
+
+          <div class="chat-actions">
+            <button id="chatSendBtn" class="primary-button">送出訊息</button>
+            <button id="chatClearBtn" class="ghost-button">清除對話</button>
+          </div>
+
+          <p id="chatStatus" class="status-text"></p>
+          <div id="chatLog" class="chat-log" aria-live="polite"></div>
+        </div>
       </section>
     </main>
   </div>
