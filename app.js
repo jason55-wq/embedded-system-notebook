@@ -6,14 +6,30 @@ const noteBody = document.getElementById("noteBody");
 const notesList = document.getElementById("notesList");
 const saveStatus = document.getElementById("saveStatus");
 const generatedCode = document.getElementById("generatedCode");
+const ollamaModel = document.getElementById("ollamaModel");
+const chatPrompt = document.getElementById("chatPrompt");
+const chatLog = document.getElementById("chatLog");
+const chatStatus = document.getElementById("chatStatus");
+const chatSendBtn = document.getElementById("chatSendBtn");
+const chatClearBtn = document.getElementById("chatClearBtn");
+
+const ollamaSystemPrompt = "你是一位專注於 Arduino、嵌入式系統、感測器與除錯的本機 AI 助手。請用繁體中文回答，必要時用條列與範例程式碼說明。";
+const chatState = {
+  messages: [{ role: "system", content: ollamaSystemPrompt }]
+};
 
 document.getElementById("saveNotesBtn").addEventListener("click", saveNote);
 document.getElementById("clearNotesBtn").addEventListener("click", clearNotes);
 document.getElementById("generateCodeBtn").addEventListener("click", buildCode);
 document.getElementById("debugBtn").addEventListener("click", answerDebugPrompt);
+chatSendBtn.addEventListener("click", sendChatMessage);
+chatClearBtn.addEventListener("click", resetChat);
+chatPrompt.addEventListener("keydown", handleChatKeydown);
 
 renderNotes();
 buildCode();
+renderChat();
+loadOllamaModels();
 
 function loadNotes() {
   const raw = localStorage.getItem(notesKey);
@@ -30,7 +46,7 @@ function saveNote() {
   const body = noteBody.value.trim();
 
   if (!title || !body) {
-    saveStatus.textContent = "請至少填入主題和內容。";
+    saveStatus.textContent = "請至少填寫標題與內容。";
     return;
   }
 
@@ -49,20 +65,20 @@ function saveNote() {
   noteTitle.value = "";
   noteTags.value = "";
   noteBody.value = "";
-  saveStatus.textContent = "筆記已儲存到本機瀏覽器。";
+  saveStatus.textContent = "筆記已成功儲存。";
 }
 
 function clearNotes() {
   localStorage.removeItem(notesKey);
   renderNotes();
-  saveStatus.textContent = "所有筆記已清空。";
+  saveStatus.textContent = "所有筆記都已清除。";
 }
 
 function renderNotes() {
   const notes = loadNotes();
 
   if (!notes.length) {
-    notesList.innerHTML = "<p class='note-meta'>目前還沒有筆記，先記下你的第一個模組測試吧。</p>";
+    notesList.innerHTML = "<p class='note-meta'>目前還沒有筆記，先新增一筆試試看。</p>";
     return;
   }
 
@@ -270,26 +286,143 @@ function answerDebugPrompt() {
   const answer = document.getElementById("debugAnswer");
 
   if (!input) {
-    answer.textContent = "先輸入你目前遇到的現象，我會提供對應的排查方向。";
+    answer.textContent = "請先輸入你遇到的錯誤訊息或症狀。";
     return;
   }
 
-  if (input.includes("avrdude") || input.includes("上傳")) {
-    answer.textContent = "先檢查板型與 COM Port 是否正確，再確認 USB 線可傳輸資料。若序列監控器開著，也請先關閉後重試。";
+  if (input.includes("avrdude") || input.includes("com port")) {
+    answer.textContent = "先確認選到正確的 COM Port，並檢查 USB 線是否可傳輸資料；若序列埠被其他程式佔用，也會造成上傳失敗。";
     return;
   }
 
-  if (input.includes("亂跳") || input.includes("不穩")) {
-    answer.textContent = "這通常和供電、接地、浮接輸入或取樣雜訊有關。先確認共地、加上上拉/下拉，再用平均值或 debounce 減少抖動。";
+  if (input.includes("按鈕") || input.includes("button")) {
+    answer.textContent = "按鈕不穩定通常與接線或彈跳效應有關，建議使用 INPUT_PULLUP，並在程式中加入簡單 debounce 邏輯。";
     return;
   }
 
-  if (input.includes("沒有反應") || input.includes("沒亮")) {
-    answer.textContent = "優先確認腳位編號、元件方向、共地，以及 setup() 中是否有正確設定 pinMode。再用最小測試程式逐步驗證。";
+  if (input.includes("led") || input.includes("燈不亮")) {
+    answer.textContent = "請先確認 LED 正負極方向、限流電阻，以及程式中的腳位編號是否和實際接線一致。";
     return;
   }
 
-  answer.textContent = "建議先從三個方向排查：1. 接線與供電 2. 板型與腳位設定 3. 用最小可運作範例逐步測試。之後我們也可以把這裡升級成真正的 AI 問答助手。";
+  answer.textContent = "可以先從三個方向檢查：1. 接線是否正確。2. 板子與連接埠設定是否正確。3. 錯誤訊息是否指出特定模組或函式。";
+}
+
+function handleChatKeydown(event) {
+  if (event.key === "Enter" && !event.shiftKey) {
+    event.preventDefault();
+    sendChatMessage();
+  }
+}
+
+function resetChat() {
+  chatState.messages = [{ role: "system", content: ollamaSystemPrompt }];
+  chatPrompt.value = "";
+  chatStatus.textContent = "已清除對話。";
+  renderChat();
+}
+
+async function sendChatMessage() {
+  const content = chatPrompt.value.trim();
+
+  if (!content) {
+    chatStatus.textContent = "請先輸入要詢問 Ollama 的內容。";
+    return;
+  }
+
+  const model = ollamaModel.value.trim();
+  const userMessage = { role: "user", content };
+  const assistantMessage = { role: "assistant", content: "正在思考中..." };
+
+  chatState.messages.push(userMessage, assistantMessage);
+  chatPrompt.value = "";
+  chatStatus.textContent = "正在連線到本機 Ollama...";
+  chatSendBtn.disabled = true;
+  renderChat();
+
+  try {
+    const response = await fetch("/api/ollama/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        ...(model ? { model } : {}),
+        messages: chatState.messages.slice(0, -1)
+      })
+    });
+
+    const payload = await response.json();
+
+    if (!response.ok) {
+      throw new Error(payload.error || payload.message || "Ollama 回傳了錯誤。");
+    }
+
+    assistantMessage.content = payload?.message?.content || payload?.response || "Ollama 沒有回傳內容。";
+    chatStatus.textContent = "已收到回覆。";
+  } catch (error) {
+    assistantMessage.content = `無法連線到 Ollama：${error.message}`;
+    chatStatus.textContent = "聊天失敗，請確認 Ollama 已啟動。";
+  } finally {
+    chatSendBtn.disabled = false;
+    renderChat();
+  }
+}
+
+async function loadOllamaModels() {
+  try {
+    const response = await fetch("/api/ollama/models");
+    const payload = await response.json();
+
+    if (!response.ok) {
+      throw new Error(payload.error || "Failed to load Ollama models.");
+    }
+
+    const models = Array.isArray(payload.models) ? payload.models : [];
+    if (!models.length) {
+      return;
+    }
+
+    const currentValue = ollamaModel.value.trim();
+    if (!currentValue || !models.includes(currentValue)) {
+      ollamaModel.value = models[0];
+      chatStatus.textContent = `已自動選用本機模型：${models[0]}`;
+    }
+  } catch (error) {
+    if (!ollamaModel.value.trim()) {
+      chatStatus.textContent = `無法讀取本機模型清單：${error.message}`;
+    }
+  }
+}
+
+function renderChat() {
+  const visibleMessages = chatState.messages.filter((message) => message.role !== "system");
+
+  if (!visibleMessages.length) {
+    chatLog.innerHTML = `
+      <p class="chat-empty">還沒有對話。先輸入問題，這裡會顯示你和 Ollama 的聊天內容。</p>
+    `;
+    return;
+  }
+
+  chatLog.innerHTML = visibleMessages.map((message) => {
+    const isUser = message.role === "user";
+    const speaker = isUser ? "你" : "Ollama";
+    const roleClass = isUser ? "user" : "assistant";
+    const content = escapeHtml(message.content).replace(/\n/g, "<br>");
+
+    return `
+      <article class="chat-message ${roleClass}">
+        <div class="chat-message-meta">
+          <span>${speaker}</span>
+          <span>${isUser ? "使用者" : "AI 回覆"}</span>
+        </div>
+        <div class="chat-message-content">${content}</div>
+      </article>
+    `;
+  }).join("");
+
+  chatLog.scrollTop = chatLog.scrollHeight;
 }
 
 function labelForBoard(boardType) {

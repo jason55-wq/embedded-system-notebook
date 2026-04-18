@@ -1,0 +1,2 @@
+Arduino Notebook is running at http://127.0.0.1:8011/index.html
+Ollama chat endpoint: POST /api/ollama/chat
