@@ -17,3 +17,4 @@ Thumbs.db
 
 # Local runtime output
 *.log
+app.sqlite3

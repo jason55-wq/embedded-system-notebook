@@ -112,6 +112,36 @@
         <textarea id="generatedCode" class="code-output" spellcheck="false"></textarea>
       </section>
 
+      <section class="panel full-width upload-panel">
+        <div class="panel-header">
+          <div>
+            <p class="panel-kicker">檔案管理</p>
+            <h2>檔案上傳與 SQLite 存檔</h2>
+          </div>
+        </div>
+
+        <div class="upload-grid">
+          <div class="upload-form">
+            <label class="field-label" for="uploadFiles">選擇檔案</label>
+            <input id="uploadFiles" class="text-input" type="file" multiple>
+
+            <label class="field-label" for="uploadNote">備註（選填）</label>
+            <input id="uploadNote" class="text-input" type="text" placeholder="例如：Arduino 接線圖、測試紀錄、程式備份">
+
+            <button id="uploadBtn" class="primary-button">上傳並存檔</button>
+            <p id="uploadStatus" class="status-text"></p>
+          </div>
+
+          <div class="upload-history">
+            <div class="subsection-header">
+              <h3>已上傳檔案</h3>
+              <button id="refreshUploadsBtn" class="ghost-button">重新整理</button>
+            </div>
+            <div id="uploadList" class="upload-list"></div>
+          </div>
+        </div>
+      </section>
+
       <section class="panel full-width">
         <div class="panel-header">
           <div>

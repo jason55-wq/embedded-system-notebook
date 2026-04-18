@@ -5,6 +5,12 @@ const noteTags = document.getElementById("noteTags");
 const noteBody = document.getElementById("noteBody");
 const notesList = document.getElementById("notesList");
 const saveStatus = document.getElementById("saveStatus");
+const uploadFiles = document.getElementById("uploadFiles");
+const uploadNote = document.getElementById("uploadNote");
+const uploadStatus = document.getElementById("uploadStatus");
+const uploadList = document.getElementById("uploadList");
+const uploadBtn = document.getElementById("uploadBtn");
+const refreshUploadsBtn = document.getElementById("refreshUploadsBtn");
 const generatedCode = document.getElementById("generatedCode");
 const ollamaModel = document.getElementById("ollamaModel");
 const chatPrompt = document.getElementById("chatPrompt");
@@ -22,11 +28,14 @@ document.getElementById("saveNotesBtn").addEventListener("click", saveNote);
 document.getElementById("clearNotesBtn").addEventListener("click", clearNotes);
 document.getElementById("generateCodeBtn").addEventListener("click", buildCode);
 document.getElementById("debugBtn").addEventListener("click", answerDebugPrompt);
+uploadBtn.addEventListener("click", uploadSelectedFiles);
+refreshUploadsBtn.addEventListener("click", loadUploads);
 chatSendBtn.addEventListener("click", sendChatMessage);
 chatClearBtn.addEventListener("click", resetChat);
 chatPrompt.addEventListener("keydown", handleChatKeydown);
 
 renderNotes();
+loadUploads();
 buildCode();
 renderChat();
 loadOllamaModels();
@@ -72,6 +81,109 @@ function clearNotes() {
   localStorage.removeItem(notesKey);
   renderNotes();
   saveStatus.textContent = "所有筆記都已清除。";
+}
+
+async function uploadSelectedFiles() {
+  const files = Array.from(uploadFiles.files || []);
+
+  if (!files.length) {
+    uploadStatus.textContent = "請先選擇至少一個檔案。";
+    return;
+  }
+
+  const formData = new FormData();
+  files.forEach((file) => {
+    formData.append("files", file, file.name);
+  });
+
+  const note = uploadNote.value.trim();
+  if (note) {
+    formData.append("note", note);
+  }
+
+  uploadBtn.disabled = true;
+  uploadStatus.textContent = "正在上傳並儲存到 SQLite...";
+
+  try {
+    const response = await fetch("/api/uploads", {
+      method: "POST",
+      body: formData
+    });
+
+    const payload = await response.json();
+
+    if (!response.ok) {
+      throw new Error(payload.error || "檔案上傳失敗。");
+    }
+
+    uploadFiles.value = "";
+    uploadNote.value = "";
+    uploadStatus.textContent = `已上傳 ${payload.uploaded?.length || files.length} 個檔案。`;
+    await loadUploads();
+  } catch (error) {
+    uploadStatus.textContent = `上傳失敗：${error.message}`;
+  } finally {
+    uploadBtn.disabled = false;
+  }
+}
+
+async function loadUploads() {
+  try {
+    const response = await fetch("/api/uploads");
+    const payload = await response.json();
+
+    if (!response.ok) {
+      throw new Error(payload.error || "無法讀取上傳檔案清單。");
+    }
+
+    renderUploads(Array.isArray(payload.uploads) ? payload.uploads : []);
+  } catch (error) {
+    uploadList.innerHTML = `<p class="upload-empty">無法載入上傳清單：${escapeHtml(error.message)}</p>`;
+  }
+}
+
+function renderUploads(uploads) {
+  if (!uploads.length) {
+    uploadList.innerHTML = "<p class='upload-empty'>目前還沒有上傳檔案。</p>";
+    return;
+  }
+
+  uploadList.innerHTML = uploads.map((file) => `
+    <article class="upload-card">
+      <div class="upload-card-main">
+        <h4>${escapeHtml(file.filename)}</h4>
+        <p class="upload-meta">
+          ${escapeHtml(file.content_type || "unknown")}
+          ｜${formatBytes(file.size)}
+          ｜${escapeHtml(file.created_at)}
+        </p>
+        ${file.note ? `<p class="upload-note">備註：${escapeHtml(file.note)}</p>` : ""}
+      </div>
+      <a class="ghost-button upload-link" href="${escapeHtml(file.download_url)}" target="_blank" rel="noopener">下載檔案</a>
+    </article>
+  `).join("");
+}
+
+function formatBytes(bytes) {
+  const size = Number(bytes);
+
+  if (!Number.isFinite(size) || size < 1024) {
+    return `${Math.max(0, Math.round(size || 0))} B`;
+  }
+
+  const units = ["KB", "MB", "GB", "TB"];
+  let value = size / 1024;
+  let unit = units[0];
+
+  for (let i = 0; i < units.length; i += 1) {
+    unit = units[i];
+    if (value < 1024 || i === units.length - 1) {
+      break;
+    }
+    value /= 1024;
+  }
+
+  return `${value.toFixed(value >= 10 ? 0 : 1)} ${unit}`;
 }
 
 function renderNotes() {
